@@ -1,4 +1,4 @@
-#🎤 IntelliCrowd AI – Smart Event Coordination Platform
+# 🎤 IntelliCrowd AI – Smart Event Coordination Platform
 
 An AI-inspired crowd management system designed to improve crowd movement, reduce waiting times, and enable real-time coordination at large-scale events like concerts.
 
