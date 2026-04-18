@@ -95,3 +95,20 @@ The application is deployed using Google Cloud Run.
 3) Personalized navigation
 
 4) Autonomous crowd control systems
+
+----
+
+## 🏁 Conclusion
+
+IntelliCrowd AI demonstrates how AI-driven insights and real-time data can transform crowd management, making large-scale events safer, more efficient, and enjoyable.
+
+----
+
+## 📝 Note
+
+This is a lightweight prototype built for demonstration purposes, focusing on concept, design, and user experience.
+
+-----
+
+## 🚀 Acknowledgment
+Developed as part of PromptWars (Hack2Skill Program).
