@@ -53,6 +53,12 @@ function getStarted() {
         updateTimestamp();
         startStaggeredUpdates();
         startEventLogUpdates();
+        
+        // Setup navigation listener
+        const locationSelect = document.getElementById('userLocation');
+        if (locationSelect) {
+            locationSelect.addEventListener('change', updateNavigationSuggestion);
+        }
     }, 300);
 }
 
@@ -151,7 +157,7 @@ function animateZone(zoneId) {
 }
 
 // ============================================
-// STAGGERED UPDATES (Slight delay between zones)
+// STAGGERED UPDATES (Every 2.5 seconds, with delay between zones)
 // ============================================
 function startStaggeredUpdates() {
     setInterval(() => {
@@ -171,12 +177,13 @@ function startStaggeredUpdates() {
         // Update summary stats after all zones
         setTimeout(() => {
             updateDashboardStats();
+            updateNavigationSuggestion(); // Update navigation suggestion when data changes
         }, ZONES.length * 150 + 200);
         
         // Update timestamp
         updateTimestamp();
         
-    }, 2000); // Update every 2 seconds
+    }, 2500); // Update every 2.5 seconds
 }
 
 // ============================================
@@ -193,6 +200,67 @@ function startEventLogUpdates() {
             }
         }
     }, 8000);
+}
+
+// ============================================
+// SMART NAVIGATION - Location Selection
+// ============================================
+function updateNavigationSuggestion() {
+    const select = document.getElementById('userLocation');
+    const suggestionDiv = document.getElementById('navSuggestion');
+    
+    if (!select || !suggestionDiv) return;
+    
+    const selectedLocation = select.value;
+    
+    if (!selectedLocation) {
+        suggestionDiv.innerHTML = '🤖 Select a location above for AI-powered navigation guidance';
+        return;
+    }
+    
+    // Find the selected zone
+    const zone = ZONES.find(z => z.name === selectedLocation);
+    if (!zone) return;
+    
+    const density = zone.currentDensity;
+    const waitTime = zone.currentWaitTime;
+    
+    // Generate suggestion based on density
+    if (density > 70) {
+        // Find less crowded alternatives
+        const alternatives = ZONES.filter(z => z.currentDensity < 50 && z.name !== selectedLocation).slice(0, 2);
+        
+        if (alternatives.length > 0) {
+            suggestionDiv.innerHTML = `
+                🚶 <strong>${selectedLocation} is heavily congested</strong><br>
+                Current density: ${density}% • Wait time: ${waitTime} min<br><br>
+                🤖 <strong>AI Recommendation:</strong><br>
+                Consider moving toward:<br>
+                • ${alternatives[0].name} (${alternatives[0].currentDensity}% density)<br>
+                ${alternatives[1] ? `• ${alternatives[1].name} (${alternatives[1].currentDensity}% density)` : ''}
+            `;
+        } else {
+            suggestionDiv.innerHTML = `
+                🚶 <strong>${selectedLocation} is heavily congested</strong><br>
+                Density: ${density}% • Wait: ${waitTime} min<br><br>
+                ⚠️ All zones are moderately crowded. Consider waiting 10-15 minutes.
+            `;
+        }
+    } else if (density > 45) {
+        const predicted = Math.min(98, density + Math.floor(Math.random() * 10) + 2);
+        suggestionDiv.innerHTML = `
+            ⚠️ <strong>${selectedLocation} is moderately busy</strong><br>
+            Current density: ${density}% • Wait time: ${waitTime} min<br><br>
+            📊 AI predicts ${predicted}% density in 10 minutes.<br>
+            💡 Consider visiting during off-peak hours.
+        `;
+    } else {
+        suggestionDiv.innerHTML = `
+            ✅ <strong>${selectedLocation} is currently clear</strong><br>
+            Density: ${density}% • Wait time: ${waitTime} min<br><br>
+            🎉 Great time to visit! Enjoy the event!
+        `;
+    }
 }
 
 // ============================================
@@ -313,6 +381,7 @@ function goToScreen(screenName) {
     if (screenName === 'dashboard') {
         rebuildZonesGrid();
         updateDashboardStats();
+        updateNavigationSuggestion();
     }
 }
 
