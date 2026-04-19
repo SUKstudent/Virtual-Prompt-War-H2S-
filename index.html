@@ -43,12 +43,16 @@
 
         <!-- Main Layout: Sidebar + Content -->
         <div class="main-layout">
-            <!-- ⚫ SIDEBAR NAVIGATION (Minimal) -->
+            <!-- ⚫ SIDEBAR NAVIGATION -->
             <aside class="sidebar">
                 <nav class="sidebar-nav">
                     <button class="nav-item active" data-screen="dashboard" onclick="goToScreen('dashboard')">
                         <span class="nav-icon">📊</span>
                         <span>Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-screen="navigation" onclick="goToScreen('navigation')">
+                        <span class="nav-icon">🧭</span>
+                        <span>Navigation</span>
                     </button>
                     <button class="nav-item" data-screen="about" onclick="goToScreen('about')">
                         <span class="nav-icon">ℹ️</span>
@@ -59,7 +63,7 @@
 
             <!-- RIGHT CONTENT AREA -->
             <main class="content">
-                <!-- DASHBOARD SCREEN -->
+                <!-- SCREEN 1: DASHBOARD -->
                 <div id="screen-dashboard" class="screen active">
                     <!-- 📊 Top Section - Summary Stats -->
                     <div class="stats-row">
@@ -81,32 +85,6 @@
                         </div>
                     </div>
 
-                    <!-- 🧭 Smart Navigation Assistant -->
-                    <div class="nav-card">
-                        <div class="nav-card-header">
-                            <span class="nav-card-icon">🧭</span>
-                            <h3>Smart Navigation Assistant</h3>
-                        </div>
-                        <select id="userLocation" class="location-select">
-                            <option value="">Select your current location...</option>
-                            <option value="Stage">🎸 Stage</option>
-                            <option value="Seating Area">💺 Seating Area</option>
-                            <option value="Gate A">🚪 Gate A</option>
-                            <option value="Gate B">🚪 Gate B</option>
-                            <option value="Gate C">🚪 Gate C</option>
-                            <option value="Food Court">🍔 Food Court</option>
-                            <option value="Restrooms">🚻 Restrooms</option>
-                            <option value="Merchandise Zone">👕 Merchandise Zone</option>
-                            <option value="Parking Area">🅿️ Parking Area</option>
-                            <option value="Drop-off Zone">🚗 Drop-off Zone</option>
-                            <option value="Medical Zone">🏥 Medical Zone</option>
-                            <option value="Security Check">🛡️ Security Check</option>
-                        </select>
-                        <div id="navSuggestion" class="nav-suggestion">
-                            🤖 Select a location above for AI-powered navigation guidance
-                        </div>
-                    </div>
-
                     <!-- 🟡 Center Section - Zone Monitoring Grid -->
                     <div class="section-title">
                         <h2>📍 Live Zone Monitoring</h2>
@@ -121,7 +99,52 @@
                     </div>
                 </div>
 
-                <!-- ABOUT SCREEN -->
+                <!-- SCREEN 2: NAVIGATION (Smart Navigation Assistant) -->
+                <div id="screen-navigation" class="screen">
+                    <div class="nav-page-container">
+                        <div class="nav-page-header">
+                            <span class="nav-page-icon">🧭</span>
+                            <h2>Smart Navigation Assistant</h2>
+                            <p>AI-powered guidance to help you navigate the venue efficiently</p>
+                        </div>
+
+                        <div class="nav-page-card">
+                            <div class="nav-page-selector">
+                                <label>📍 Select your current location:</label>
+                                <select id="userLocation" class="location-select-large">
+                                    <option value="">Choose your current zone...</option>
+                                    <option value="Stage">🎸 Stage</option>
+                                    <option value="Seating Area">💺 Seating Area</option>
+                                    <option value="Gate A">🚪 Gate A</option>
+                                    <option value="Gate B">🚪 Gate B</option>
+                                    <option value="Gate C">🚪 Gate C</option>
+                                    <option value="Food Court">🍔 Food Court</option>
+                                    <option value="Restrooms">🚻 Restrooms</option>
+                                    <option value="Merchandise Zone">👕 Merchandise Zone</option>
+                                    <option value="Parking Area">🅿️ Parking Area</option>
+                                    <option value="Drop-off Zone">🚗 Drop-off Zone</option>
+                                    <option value="Medical Zone">🏥 Medical Zone</option>
+                                    <option value="Security Check">🛡️ Security Check</option>
+                                </select>
+                            </div>
+
+                            <div id="navPageSuggestion" class="nav-page-suggestion">
+                                🤖 Select your current location above for AI-powered navigation guidance
+                            </div>
+
+                            <div class="nav-tips">
+                                <h4>💡 Pro Tips</h4>
+                                <ul>
+                                    <li>🟢 Green zones (under 45%) - Best time to visit</li>
+                                    <li>🟡 Yellow zones (45-70%) - Moderate crowd, short wait</li>
+                                    <li>🔴 Red zones (over 70%) - High congestion, consider alternatives</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCREEN 3: ABOUT -->
                 <div id="screen-about" class="screen">
                     <div class="about-container">
                         <h2>About IntelliCrowd AI</h2>
