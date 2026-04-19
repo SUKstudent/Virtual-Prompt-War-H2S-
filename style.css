@@ -291,32 +291,42 @@ header {
     color: #64748b;
 }
 
-/* 🧭 Smart Navigation */
-.nav-selector {
-    background: rgba(168, 85, 247, 0.1);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+/* 🧭 Smart Navigation Card */
+.nav-card {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(124, 58, 237, 0.05));
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
-.nav-selector label {
+.nav-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.nav-card-icon {
+    font-size: 1.5rem;
+}
+
+.nav-card-header h3 {
+    font-size: 1.1rem;
     font-weight: 600;
     color: #a855f7;
 }
 
 .location-select {
-    flex: 1;
-    padding: 0.6rem;
+    width: 100%;
+    padding: 0.75rem;
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 0.5rem;
     color: white;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     cursor: pointer;
+    margin-bottom: 1rem;
 }
 
 .location-select option {
@@ -327,10 +337,20 @@ header {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 0.75rem;
     padding: 1rem;
-    margin-bottom: 1.5rem;
     font-size: 0.9rem;
     line-height: 1.5;
     border-left: 3px solid #a855f7;
+}
+
+/* Section Title */
+.section-title {
+    margin-bottom: 1rem;
+}
+
+.section-title h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f9ca24;
 }
 
 /* 🟡 Center Section - Zone Monitoring Grid */
@@ -449,6 +469,35 @@ header {
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
+/* Bottom Navigation */
+.bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.bottom-nav-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 2rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bottom-nav-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.page-indicator {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
 /* Footer */
 footer {
     margin-top: 2rem;
@@ -507,10 +556,5 @@ footer {
     
     .welcome-card {
         padding: 1.5rem;
-    }
-    
-    .nav-selector {
-        flex-direction: column;
-        align-items: stretch;
     }
 }
