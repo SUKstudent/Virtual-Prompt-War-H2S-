@@ -1,253 +1,309 @@
-// 12 Zones as specified
+// ============================================
+// 12 ZONES CONFIGURATION
+// ============================================
 const ZONES = [
-    "Stage",
-    "Seating Area",
-    "Gate A",
-    "Gate B",
-    "Gate C",
-    "Food Court",
-    "Restrooms",
-    "Merchandise Zone",
-    "Parking Area",
-    "Drop-off Zone",
-    "Medical Zone",
-    "Security Check"
+    { id: 1, name: "Stage", type: "attraction", baseCapacity: 2000 },
+    { id: 2, name: "Seating Area", type: "seating", baseCapacity: 5000 },
+    { id: 3, name: "Gate A", type: "entry", baseCapacity: 800 },
+    { id: 4, name: "Gate B", type: "entry", baseCapacity: 800 },
+    { id: 5, name: "Gate C", type: "entry", baseCapacity: 800 },
+    { id: 6, name: "Food Court", type: "service", baseCapacity: 600 },
+    { id: 7, name: "Restrooms", type: "facility", baseCapacity: 200 },
+    { id: 8, name: "Merchandise Zone", type: "service", baseCapacity: 300 },
+    { id: 9, name: "Parking Area", type: "transit", baseCapacity: 1500 },
+    { id: 10, name: "Drop-off Zone", type: "transit", baseCapacity: 300 },
+    { id: 11, name: "Medical Zone", type: "safety", baseCapacity: 100 },
+    { id: 12, name: "Security Check", type: "safety", baseCapacity: 400 }
 ];
 
-// AI: Generate realistic crowd density (20-95%)
-function generateDensity() {
-    return Math.floor(Math.random() * (95 - 20 + 1)) + 20;
+// ============================================
+// AI DECISION ENGINE
+// ============================================
+
+// Generate realistic density (20-95%) with zone-specific tendencies
+function generateDensity(zone) {
+    let base = Math.floor(Math.random() * (95 - 20 + 1)) + 20;
+    
+    // Zone-specific adjustments
+    if (zone.type === "entry") base += 5;  // Gates are always busier
+    if (zone.type === "attraction") base += 10; // Stage is very busy
+    if (zone.type === "transit") base -= 5; // Parking/drop-off varies
+    
+    return Math.min(95, Math.max(20, base));
 }
 
-// AI: Calculate wait time based on density
-function calculateWaitTime(density) {
-    if (density < 30) return Math.floor(Math.random() * 3) + 1; // 1-3 min
-    if (density < 50) return Math.floor(Math.random() * 5) + 3; // 3-7 min
-    if (density < 70) return Math.floor(Math.random() * 8) + 7; // 7-14 min
-    if (density < 85) return Math.floor(Math.random() * 10) + 15; // 15-24 min
-    return Math.floor(Math.random() * 15) + 25; // 25-39 min
+// AI: Calculate wait time based on density and zone type
+function calculateWaitTime(density, zoneType) {
+    let baseWait = 0;
+    
+    if (density < 30) baseWait = Math.floor(Math.random() * 3) + 1;
+    else if (density < 50) baseWait = Math.floor(Math.random() * 5) + 3;
+    else if (density < 70) baseWait = Math.floor(Math.random() * 7) + 8;
+    else if (density < 85) baseWait = Math.floor(Math.random() * 10) + 15;
+    else baseWait = Math.floor(Math.random() * 15) + 25;
+    
+    // Service zones have longer waits
+    if (zoneType === "service") baseWait = Math.floor(baseWait * 1.3);
+    if (zoneType === "entry") baseWait = Math.floor(baseWait * 1.2);
+    
+    return baseWait;
 }
 
-// AI: Predict density in 10 minutes (using linear prediction)
-function predictDensity(currentDensity) {
-    // Simple AI prediction: trend + random factor
+// AI: Predict density in 10 minutes (trend analysis)
+function predictDensity(currentDensity, zoneType) {
     let trend = 0;
-    if (currentDensity > 80) trend = -3; // Will decrease (people leave)
-    else if (currentDensity > 60) trend = 2; // Will increase
-    else if (currentDensity > 40) trend = 5; // Rapid increase
-    else trend = 8; // Fast increase (early arrival)
+    
+    // Different trends based on zone type
+    if (zoneType === "attraction") trend = currentDensity > 70 ? -5 : 8;
+    else if (zoneType === "entry") trend = currentDensity > 80 ? -8 : 3;
+    else if (zoneType === "service") trend = currentDensity > 75 ? -3 : 5;
+    else trend = currentDensity > 85 ? -10 : 2;
     
     let predicted = currentDensity + trend + (Math.random() * 6 - 3);
-    predicted = Math.min(98, Math.max(15, predicted));
-    return Math.round(predicted);
+    return Math.min(98, Math.max(15, Math.round(predicted)));
 }
 
-// Generate all zone data
+// Generate complete zone data
 function generateZoneData() {
     return ZONES.map(zone => {
-        const density = generateDensity();
+        const density = generateDensity(zone);
         return {
-            name: zone,
+            ...zone,
             density: density,
-            waitTime: calculateWaitTime(density),
-            predictedDensity: predictDensity(density),
-            status: density < 50 ? 'good' : (density < 75 ? 'moderate' : 'crowded')
+            waitTime: calculateWaitTime(density, zone.type),
+            predictedDensity: predictDensity(density, zone.type),
+            status: density < 45 ? 'low' : (density < 70 ? 'medium' : 'high')
         };
     });
 }
 
-// Generate AI alerts based on data
+// ============================================
+// AI ALERT GENERATOR (Rules-based)
+// ============================================
 function generateAlerts(zonesData) {
     const alerts = [];
-    const crowdedZones = zonesData.filter(z => z.density > 75);
-    const moderateZones = zonesData.filter(z => z.density > 60 && z.density <= 75);
     
-    // Critical alerts for overcrowded zones
-    crowdedZones.forEach(zone => {
+    // RULE 1: Critical overcrowding (>80%)
+    const criticalZones = zonesData.filter(z => z.density > 80);
+    criticalZones.forEach(zone => {
         alerts.push({
             type: 'critical',
-            title: `⚠️ CRITICAL: ${zone.name}`,
-            message: `Currently at ${zone.density}% capacity. Predicted to reach ${zone.predictedDensity}% in 10 minutes. Immediate action recommended.`
+            icon: '🚨',
+            title: `CRITICAL: ${zone.name} Overcrowded`,
+            message: `${zone.density}% capacity • ${zone.waitTime} min wait • Immediate action needed`
         });
     });
     
-    // Suggestions for moderate zones
-    moderateZones.forEach(zone => {
-        const lessCrowded = zonesData.find(z => z.density < 45);
-        if (lessCrowded) {
-            alerts.push({
-                type: 'suggestion',
-                title: `💡 AI Suggestion: ${zone.name}`,
-                message: `At ${zone.density}% capacity. Consider redirecting traffic toward ${lessCrowded.name} (${lessCrowded.density}% capacity).`
-            });
-        }
+    // RULE 2: High congestion alerts (>70%)
+    const highZones = zonesData.filter(z => z.density > 70 && z.density <= 80);
+    highZones.forEach(zone => {
+        alerts.push({
+            type: 'warning',
+            icon: '⚠️',
+            title: `${zone.name} at ${zone.density}% capacity`,
+            message: `Expected to reach ${zone.predictedDensity}% in 10 minutes`
+        });
     });
     
-    // Add general recommendation if no critical alerts
-    if (crowdedZones.length === 0 && moderateZones.length === 0) {
-        alerts.push({
-            type: 'success',
-            title: `✅ All zones operating normally`,
-            message: `Crowd flow is balanced. Continue monitoring.`
+    // RULE 3: Smart suggestions (find less crowded alternatives)
+    const crowdedZones = zonesData.filter(z => z.density > 65);
+    const quietZones = zonesData.filter(z => z.density < 40);
+    
+    if (crowdedZones.length > 0 && quietZones.length > 0) {
+        crowdedZones.slice(0, 2).forEach(crowded => {
+            const bestAlternative = quietZones[0];
+            alerts.push({
+                type: 'suggestion',
+                icon: '💡',
+                title: `AI Suggestion: ${crowded.name}`,
+                message: `Consider redirecting traffic toward ${bestAlternative.name} (${bestAlternative.density}% • ${bestAlternative.waitTime} min wait)`
+            });
         });
     }
     
-    // Add peak time prediction
-    const peakZone = zonesData.reduce((max, z) => z.density > max.density ? z : max, zonesData[0]);
+    // RULE 4: Gate balancing suggestion
+    const gates = zonesData.filter(z => z.name.includes('Gate'));
+    const busiestGate = gates.reduce((max, g) => g.density > max.density ? g : max, gates[0]);
+    const quietestGate = gates.reduce((min, g) => g.density < min.density ? g : min, gates[0]);
+    
+    if (busiestGate.density - quietestGate.density > 30) {
+        alerts.push({
+            type: 'suggestion',
+            icon: '🚪',
+            title: 'Gate Balancing Recommendation',
+            message: `${busiestGate.name} is at ${busiestGate.density}% while ${quietestGate.name} is at ${quietestGate.density}%. Suggest directing attendees to ${quietestGate.name}.`
+        });
+    }
+    
+    // RULE 5: Peak time prediction
+    const peakZone = zonesData.reduce((max, z) => z.predictedDensity > max.predictedDensity ? z : max, zonesData[0]);
     alerts.push({
         type: 'info',
-        title: `📊 AI Prediction`,
-        message: `Expected peak congestion at ${peakZone.name} in approximately 15-20 minutes. Prepare crowd diversion.`
+        icon: '📊',
+        title: 'AI Prediction',
+        message: `Peak congestion expected at ${peakZone.name} (${peakZone.predictedDensity}%) in ~10 minutes`
     });
     
-    return alerts.slice(0, 5); // Max 5 alerts
+    // RULE 6: If everything is calm
+    if (criticalZones.length === 0 && highZones.length === 0 && zonesData.every(z => z.density < 60)) {
+        alerts.unshift({
+            type: 'success',
+            icon: '✅',
+            title: 'All Zones Operating Normally',
+            message: 'Crowd flow is well distributed. Continue monitoring.'
+        });
+    }
+    
+    return alerts.slice(0, 6);
 }
 
-// Update the entire UI
+// ============================================
+// SMART NAVIGATION (Route recommendations)
+// ============================================
+function getNavigationSuggestion(userLocation, zonesData) {
+    const zone = zonesData.find(z => z.name === userLocation);
+    if (!zone) return null;
+    
+    if (zone.status === 'high') {
+        // Find alternatives
+        const alternatives = zonesData
+            .filter(z => z.status !== 'high' && z.name !== userLocation)
+            .sort((a, b) => a.density - b.density)
+            .slice(0, 3);
+        
+        return {
+            status: 'congested',
+            message: `🚶 ${userLocation} is heavily congested (${zone.density}%, ${zone.waitTime} min wait)`,
+            alternatives: alternatives.map(a => `${a.name} (${a.density}%, ${a.waitTime} min)`)
+        };
+    } else if (zone.status === 'medium') {
+        return {
+            status: 'moderate',
+            message: `⚠️ ${userLocation} is moderately busy (${zone.density}%, ${zone.waitTime} min wait)`,
+            alternatives: [`Expect ${zone.predictedDensity}% in 10 minutes`]
+        };
+    } else {
+        return {
+            status: 'good',
+            message: `✅ ${userLocation} is clear (${zone.density}%, ${zone.waitTime} min wait)`,
+            alternatives: [`Enjoy your time! Predicted to stay under ${zone.predictedDensity}%`]
+        };
+    }
+}
+
+// ============================================
+// UI UPDATE FUNCTIONS
+// ============================================
+let currentZonesData = [];
+
 function updateDashboard() {
-    const zonesData = generateZoneData();
+    currentZonesData = generateZoneData();
     
-    // Calculate stats
-    const densities = zonesData.map(z => z.density);
-    const avgDensity = Math.round(densities.reduce((a,b) => a+b, 0) / densities.length);
-    const crowdedZonesCount = zonesData.filter(z => z.density > 70).length;
-    const peakWait = Math.max(...zonesData.map(z => z.waitTime));
-    
-    // Update stat cards
-    document.getElementById('avgDensity').innerHTML = avgDensity + '<span class="stat-unit">%</span>';
-    document.getElementById('crowdedZones').innerHTML = crowdedZonesCount;
-    document.getElementById('peakWait').innerHTML = peakWait + '<span class="stat-unit">min</span>';
+    // Update stats
+    const avgDensity = Math.round(currentZonesData.reduce((s, z) => s + z.density, 0) / currentZonesData.length);
+    document.getElementById('eventStatus').innerHTML = avgDensity > 60 ? '🟡 High Traffic' : '🟢 Normal';
+    document.getElementById('totalAttendees').innerHTML = Math.floor(Math.random() * 5000) + 2000;
+    document.getElementById('peakHour').innerHTML = ['7PM', '8PM', '9PM'][Math.floor(Math.random() * 3)];
     
     // Update zones grid
     const zonesGrid = document.getElementById('zonesGrid');
     zonesGrid.innerHTML = '';
     
-    zonesData.forEach(zone => {
-        let densityClass = 'density-low';
-        if (zone.density > 70) densityClass = 'density-high';
-        else if (zone.density > 45) densityClass = 'density-medium';
-        
-        // Get emoji for zone
-        let emoji = '📍';
-        if (zone.name.includes('Gate')) emoji = '🚪';
-        else if (zone.name === 'Stage') emoji = '🎸';
-        else if (zone.name === 'Food Court') emoji = '🍔';
-        else if (zone.name === 'Restrooms') emoji = '🚻';
-        else if (zone.name === 'Merchandise Zone') emoji = '👕';
-        else if (zone.name === 'Parking Area') emoji = '🅿️';
-        else if (zone.name === 'Medical Zone') emoji = '🏥';
-        else if (zone.name === 'Security Check') emoji = '🛡️';
-        
+    currentZonesData.forEach(zone => {
         const zoneCard = document.createElement('div');
-        zoneCard.className = `zone-card ${densityClass}`;
+        zoneCard.className = `zone-card ${zone.status}`;
         zoneCard.innerHTML = `
             <div class="zone-info">
-                <span class="zone-name">${emoji} ${zone.name}</span>
-                <span class="zone-prediction">AI predicts: ${zone.predictedDensity}% in 10 min</span>
+                <h4>${zone.name}</h4>
+                <div class="density-bar">
+                    <div class="density-fill ${zone.status}" style="width: ${zone.density}%"></div>
+                </div>
+                <small>AI predicts: ${zone.predictedDensity}% in 10min</small>
             </div>
             <div class="zone-stats">
-                <div class="zone-density">${zone.density}%</div>
-                <div class="zone-wait">⏱ ${zone.waitTime} min wait</div>
+                <div class="density-value">${zone.density}%</div>
+                <div class="wait-badge">⏱ ${zone.waitTime} min</div>
             </div>
         `;
         zonesGrid.appendChild(zoneCard);
     });
     
+    // Update queues grid (show top 8 zones by wait time)
+    const queuesGrid = document.getElementById('queuesGrid');
+    queuesGrid.innerHTML = '';
+    
+    const sortedByWait = [...currentZonesData].sort((a, b) => b.waitTime - a.waitTime).slice(0, 8);
+    sortedByWait.forEach(zone => {
+        let waitClass = 'low';
+        if (zone.waitTime > 15) waitClass = 'high';
+        else if (zone.waitTime > 8) waitClass = 'medium';
+        
+        const queueCard = document.createElement('div');
+        queueCard.className = 'queue-card';
+        queueCard.innerHTML = `
+            <span>${zone.name}</span>
+            <span class="wait-time ${waitClass}">${zone.waitTime} min</span>
+        `;
+        queuesGrid.appendChild(queueCard);
+    });
+    
     // Update alerts
-    const alerts = generateAlerts(zonesData);
+    const alerts = generateAlerts(currentZonesData);
     const alertsContainer = document.getElementById('alertsContainer');
     alertsContainer.innerHTML = '';
     
     alerts.forEach(alert => {
         const alertDiv = document.createElement('div');
-        let alertClass = 'alert-card';
-        if (alert.type === 'suggestion') alertClass += ' alert-suggestion';
-        if (alert.type === 'success') alertClass += ' alert-success';
-        alertDiv.className = alertClass;
+        alertDiv.className = `alert ${alert.type}`;
         alertDiv.innerHTML = `
-            <div class="alert-title">${alert.title}</div>
-            <div class="alert-message">${alert.message}</div>
+            <div class="alert-icon">${alert.icon}</div>
+            <div class="alert-content">
+                <div class="alert-title">${alert.title}</div>
+                <div class="alert-message">${alert.message}</div>
+            </div>
         `;
         alertsContainer.appendChild(alertDiv);
     });
     
-    // Store current data for navigation
-    window.currentZonesData = zonesData;
+    // Update last update time
+    const now = new Date();
+    document.getElementById('lastUpdate').innerHTML = now.toLocaleTimeString();
 }
 
-// Navigation handler
-function setupNavigation() {
+function updateNavigation() {
     const select = document.getElementById('userLocation');
-    const suggestionDiv = document.getElementById('navigationSuggestion');
+    const suggestionDiv = document.getElementById('navSuggestion');
+    const selectedLocation = select.value;
     
-    select.addEventListener('change', function() {
-        const location = this.value;
-        if (!location || !window.currentZonesData) {
-            suggestionDiv.innerHTML = 'Select a location to get AI-powered navigation assistance';
-            return;
-        }
-        
-        const zoneData = window.currentZonesData.find(z => z.name === location);
-        if (!zoneData) {
-            suggestionDiv.innerHTML = 'Location data not available. Please refresh.';
-            return;
-        }
-        
-        if (zoneData.density > 70) {
-            // Find less crowded alternatives
-            const alternatives = window.currentZonesData
-                .filter(z => z.density < 50 && z.name !== location)
-                .sort((a,b) => a.density - b.density)
-                .slice(0, 2);
-            
-            if (alternatives.length > 0) {
-                suggestionDiv.innerHTML = `
-                    🚶 <strong>High congestion detected at ${location}</strong><br>
-                    Current density: ${zoneData.density}% • Wait time: ${zoneData.waitTime} minutes<br><br>
-                    🤖 <strong>AI Recommendation:</strong> Consider moving toward:<br>
-                    • ${alternatives[0].name} (${alternatives[0].density}% density, ${alternatives[0].waitTime} min wait)<br>
-                    ${alternatives[1] ? `• ${alternatives[1].name} (${alternatives[1].density}% density, ${alternatives[1].waitTime} min wait)` : ''}
-                `;
-            } else {
-                suggestionDiv.innerHTML = `
-                    🚶 <strong>High congestion at ${location}</strong><br>
-                    Density: ${zoneData.density}% • Wait time: ${zoneData.waitTime} minutes<br><br>
-                    ⚠️ All zones are moderately crowded. Consider waiting 10-15 minutes.
-                `;
-            }
-        } else {
-            suggestionDiv.innerHTML = `
-                ✅ <strong>${location} is currently manageable</strong><br>
-                Current density: ${zoneData.density}% • Estimated wait: ${zoneData.waitTime} minutes<br><br>
-                💡 AI predicts ${zoneData.predictedDensity}% density in 10 minutes. Enjoy the event!
-            `;
-        }
-    });
-}
-
-// Refresh all data
-function refreshData() {
-    updateDashboard();
-    // Reset navigation suggestion
-    const select = document.getElementById('userLocation');
-    if (select.value) {
-        // Trigger navigation update
-        const event = new Event('change');
-        select.dispatchEvent(event);
+    if (!selectedLocation || !currentZonesData.length) {
+        suggestionDiv.innerHTML = '📍 Select your current location for AI-powered navigation';
+        return;
     }
+    
+    const suggestion = getNavigationSuggestion(selectedLocation, currentZonesData);
+    if (!suggestion) return;
+    
+    let html = `<strong>${suggestion.message}</strong><br><br>`;
+    if (suggestion.alternatives && suggestion.alternatives.length > 0) {
+        html += `🤖 <strong>AI Recommendation:</strong><br>`;
+        suggestion.alternatives.forEach(alt => {
+            html += `• ${alt}<br>`;
+        });
+    }
+    suggestionDiv.innerHTML = html;
 }
 
-// Initialize
-updateDashboard();
-setupNavigation();
+function forceRefresh() {
+    updateDashboard();
+    updateNavigation();
+}
 
-// Auto-refresh every 10 seconds (simulates real-time data)
+// Set up real-time updates (every 3 seconds)
+updateDashboard();
 setInterval(() => {
     updateDashboard();
-    // Also update navigation if a location is selected
-    const select = document.getElementById('userLocation');
-    if (select.value) {
-        const event = new Event('change');
-        select.dispatchEvent(event);
-    }
-}, 10000);
+    updateNavigation();
+}, 3000);
+
+// Navigation change listener
+document.getElementById('userLocation').addEventListener('change', updateNavigation);
