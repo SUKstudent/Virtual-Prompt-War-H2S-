@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <!-- 🔵 MAIN DASHBOARD (Hidden until Get Started) -->
+    <!-- 🔵 MAIN APP (Hidden until Get Started) -->
     <div id="mainApp" class="app" style="display: none;">
         <!-- Header with Timestamp -->
         <header>
@@ -61,7 +61,7 @@
             <main class="content">
                 <!-- DASHBOARD SCREEN -->
                 <div id="screen-dashboard" class="screen active">
-                    <!-- 📊 Top Section - Summary -->
+                    <!-- 📊 Top Section - Summary Stats -->
                     <div class="stats-row">
                         <div class="stat-card">
                             <span class="stat-label">Total Zones</span>
@@ -81,7 +81,36 @@
                         </div>
                     </div>
 
+                    <!-- 🧭 Smart Navigation Assistant -->
+                    <div class="nav-card">
+                        <div class="nav-card-header">
+                            <span class="nav-card-icon">🧭</span>
+                            <h3>Smart Navigation Assistant</h3>
+                        </div>
+                        <select id="userLocation" class="location-select">
+                            <option value="">Select your current location...</option>
+                            <option value="Stage">🎸 Stage</option>
+                            <option value="Seating Area">💺 Seating Area</option>
+                            <option value="Gate A">🚪 Gate A</option>
+                            <option value="Gate B">🚪 Gate B</option>
+                            <option value="Gate C">🚪 Gate C</option>
+                            <option value="Food Court">🍔 Food Court</option>
+                            <option value="Restrooms">🚻 Restrooms</option>
+                            <option value="Merchandise Zone">👕 Merchandise Zone</option>
+                            <option value="Parking Area">🅿️ Parking Area</option>
+                            <option value="Drop-off Zone">🚗 Drop-off Zone</option>
+                            <option value="Medical Zone">🏥 Medical Zone</option>
+                            <option value="Security Check">🛡️ Security Check</option>
+                        </select>
+                        <div id="navSuggestion" class="nav-suggestion">
+                            🤖 Select a location above for AI-powered navigation guidance
+                        </div>
+                    </div>
+
                     <!-- 🟡 Center Section - Zone Monitoring Grid -->
+                    <div class="section-title">
+                        <h2>📍 Live Zone Monitoring</h2>
+                    </div>
                     <div class="zones-grid" id="zonesGrid"></div>
 
                     <!-- 🟣 Small Elements -->
@@ -119,12 +148,19 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- BOTTOM NAVIGATION (Back/Next) -->
+                <div class="bottom-nav">
+                    <button class="bottom-nav-btn back" id="backBtn" onclick="prevScreen()">← Back</button>
+                    <span class="page-indicator" id="pageIndicator">Dashboard</span>
+                    <button class="bottom-nav-btn next" id="nextBtn" onclick="nextScreen()">Next →</button>
+                </div>
             </main>
         </div>
 
         <!-- Footer -->
         <footer>
-            <p>🔒 Privacy-first • 🤖 AI Decision Engine • 📡 Real-time updates every 2 seconds</p>
+            <p>🔒 Privacy-first • 🤖 AI Decision Engine • 📡 Real-time updates every 2.5 seconds</p>
         </footer>
     </div>
 
