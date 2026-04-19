@@ -18,7 +18,7 @@ const ZONES = [
 
 // Screen order for navigation
 const SCREENS = ["welcome", "dashboard", "queues", "alerts", "navigate"];
-let currentScreenIndex = 1; // Start at dashboard after welcome
+let currentScreenIndex = 0; // Start at welcome screen
 
 // Generate random density
 function generateDensity() {
@@ -138,10 +138,15 @@ function updateDashboard() {
     const avgDensity = Math.round(currentZonesData.reduce((s, z) => s + z.density, 0) / currentZonesData.length);
     const crowdedCount = currentZonesData.filter(z => z.density > 70).length;
     
-    document.getElementById('avgDensity').innerHTML = avgDensity + '<span class="unit">%</span>';
-    document.getElementById('crowdedCount').innerHTML = crowdedCount;
-    document.getElementById('eventStatus').innerHTML = avgDensity > 60 ? '🟡 High Traffic' : '🟢 Normal';
-    document.getElementById('lastUpdate').innerHTML = new Date().toLocaleTimeString();
+    const avgDensityEl = document.getElementById('avgDensity');
+    const crowdedCountEl = document.getElementById('crowdedCount');
+    const eventStatusEl = document.getElementById('eventStatus');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    
+    if (avgDensityEl) avgDensityEl.innerHTML = avgDensity + '<span class="unit">%</span>';
+    if (crowdedCountEl) crowdedCountEl.innerHTML = crowdedCount;
+    if (eventStatusEl) eventStatusEl.innerHTML = avgDensity > 60 ? '🟡 High Traffic' : '🟢 Normal';
+    if (lastUpdateEl) lastUpdateEl.innerHTML = new Date().toLocaleTimeString();
     
     // Update zones grid
     const zonesGrid = document.getElementById('zonesGrid');
@@ -175,9 +180,13 @@ function updateDashboard() {
         const busiestZone = sortedByWait[0]?.name || '--';
         const avgWait = Math.round(sortedByWait.reduce((s, z) => s + z.waitTime, 0) / sortedByWait.length);
         
-        document.getElementById('peakWait').innerHTML = `${peakWait} min`;
-        document.getElementById('busiestZone').innerHTML = busiestZone;
-        document.getElementById('avgWait').innerHTML = `${avgWait} min`;
+        const peakWaitEl = document.getElementById('peakWait');
+        const busiestZoneEl = document.getElementById('busiestZone');
+        const avgWaitEl = document.getElementById('avgWait');
+        
+        if (peakWaitEl) peakWaitEl.innerHTML = `${peakWait} min`;
+        if (busiestZoneEl) busiestZoneEl.innerHTML = busiestZone;
+        if (avgWaitEl) avgWaitEl.innerHTML = `${avgWait} min`;
         
         queuesGrid.innerHTML = '';
         sortedByWait.forEach(zone => {
@@ -253,10 +262,6 @@ function prevScreen() {
     }
 }
 
-function finishTour() {
-    goToScreen('welcome');
-}
-
 function showCurrentScreen() {
     // Hide all screens
     SCREENS.forEach(screen => {
@@ -286,14 +291,31 @@ function showCurrentScreen() {
         pageIndicator.textContent = names[currentScreen] || currentScreen;
     }
     
-    // Refresh data when showing dashboard
+    // Hide Back button on Welcome screen, show on others
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        if (currentScreen === 'welcome') {
+            backBtn.style.visibility = 'hidden';
+            backBtn.style.opacity = '0';
+            backBtn.style.cursor = 'default';
+        } else {
+            backBtn.style.visibility = 'visible';
+            backBtn.style.opacity = '1';
+            backBtn.style.cursor = 'pointer';
+        }
+    }
+    
+    // Refresh data when showing dashboard, queues, or alerts
     if (currentScreen === 'dashboard' || currentScreen === 'queues' || currentScreen === 'alerts') {
         updateDashboard();
     }
 }
 
 // Event listeners
-document.getElementById('userLocation')?.addEventListener('change', updateNavigation);
+const locationSelect = document.getElementById('userLocation');
+if (locationSelect) {
+    locationSelect.addEventListener('change', updateNavigation);
+}
 
 // Auto-refresh every 3 seconds
 setInterval(() => {
