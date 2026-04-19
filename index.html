@@ -3,13 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntelliCrowd AI | Smart Event Coordination Platform</title>
+    <title>IntelliCrowd AI | Smart Event Coordination</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app">
-        <!-- Header -->
+    <!-- 🟢 WELCOME SCREEN (Entry Layer) -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-container">
+            <div class="welcome-card">
+                <div class="welcome-icon">🎤</div>
+                <h1 class="welcome-title">IntelliCrowd <span class="ai-badge">AI</span></h1>
+                <p class="welcome-tagline">Enhancing Event Safety Through Real-Time Crowd Intelligence.</p>
+                <p class="welcome-description">AI-powered crowd management system for large-scale venues. Monitor density, predict wait times, and optimize crowd flow in real-time.</p>
+                <div class="welcome-features">
+                    <div class="welcome-feature">📍 Real-time crowd monitoring across 12 zones</div>
+                    <div class="welcome-feature">⏱ Live queue status & wait time predictions</div>
+                    <div class="welcome-feature">🚨 AI-powered alerts for overcrowding</div>
+                    <div class="welcome-feature">🤖 Smart navigation & route suggestions</div>
+                </div>
+                <button class="get-started-btn" onclick="getStarted()">Get Started →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔵 MAIN DASHBOARD (Hidden until Get Started) -->
+    <div id="mainApp" class="app" style="display: none;">
+        <!-- Header with Timestamp -->
         <header>
             <div class="logo">
                 <span class="logo-icon">🎤</span>
@@ -23,74 +43,25 @@
 
         <!-- Main Layout: Sidebar + Content -->
         <div class="main-layout">
-            <!-- LEFT NAVIGATION SIDEBAR -->
+            <!-- ⚫ SIDEBAR NAVIGATION (Minimal) -->
             <aside class="sidebar">
                 <nav class="sidebar-nav">
-                    <button class="nav-item" data-screen="welcome" onclick="goToScreen('welcome')">
-                        <span class="nav-icon">🏠</span>
-                        <span>Welcome</span>
-                    </button>
-                    <button class="nav-item" data-screen="dashboard" onclick="goToScreen('dashboard')">
+                    <button class="nav-item active" data-screen="dashboard" onclick="goToScreen('dashboard')">
                         <span class="nav-icon">📊</span>
                         <span>Dashboard</span>
                     </button>
-                    <button class="nav-item" data-screen="queues" onclick="goToScreen('queues')">
-                        <span class="nav-icon">⏱</span>
-                        <span>Queues</span>
-                    </button>
-                    <button class="nav-item" data-screen="alerts" onclick="goToScreen('alerts')">
-                        <span class="nav-icon">🚨</span>
-                        <span>Alerts</span>
-                    </button>
-                    <button class="nav-item" data-screen="navigate" onclick="goToScreen('navigate')">
-                        <span class="nav-icon">🧭</span>
-                        <span>Navigate</span>
+                    <button class="nav-item" data-screen="about" onclick="goToScreen('about')">
+                        <span class="nav-icon">ℹ️</span>
+                        <span>About</span>
                     </button>
                 </nav>
             </aside>
 
             <!-- RIGHT CONTENT AREA -->
             <main class="content">
-                <!-- SCREEN 1: WELCOME -->
-                <div id="screen-welcome" class="screen active">
-                    <div class="welcome-card">
-                        <div class="welcome-icon">🎤</div>
-                        <h2>Welcome to IntelliCrowd</h2>
-                        <p class="welcome-subtitle">Smart Event Coordination Platform powered by AI</p>
-                        <div class="features-grid">
-                            <div class="feature-card">
-                                <span class="feature-icon">📍</span>
-                                <span>Real-time crowd monitoring across 12 zones</span>
-                            </div>
-                            <div class="feature-card">
-                                <span class="feature-icon">⏱</span>
-                                <span>Live queue status & wait time predictions</span>
-                            </div>
-                            <div class="feature-card">
-                                <span class="feature-icon">🚨</span>
-                                <span>AI-powered alerts for overcrowding</span>
-                            </div>
-                            <div class="feature-card">
-                                <span class="feature-icon">🤖</span>
-                                <span>Smart navigation & route suggestions</span>
-                            </div>
-                        </div>
-                        <button class="start-btn" onclick="goToScreen('dashboard')">Get Started →</button>
-                    </div>
-                </div>
-
-                <!-- SCREEN 2: DASHBOARD -->
-                <div id="screen-dashboard" class="screen">
-                    <div class="screen-title">
-                        <h2>📍 Live Dashboard</h2>
-                        <button class="refresh-btn" onclick="forceRefresh()">🔄 Refresh</button>
-                    </div>
-                    
-                    <!-- Event Log - Cause Effect Line -->
-                    <div class="event-log" id="eventLog">
-                        📢 System initialized • All sensors online
-                    </div>
-                    
+                <!-- DASHBOARD SCREEN -->
+                <div id="screen-dashboard" class="screen active">
+                    <!-- 📊 Top Section - Summary -->
                     <div class="stats-row">
                         <div class="stat-card">
                             <span class="stat-label">Total Zones</span>
@@ -105,83 +76,55 @@
                             <span class="stat-value" id="crowdedCount">--</span>
                         </div>
                         <div class="stat-card">
-                            <span class="stat-label">Event Status</span>
-                            <span class="stat-value" id="eventStatus">🟢 Active</span>
+                            <span class="stat-label">Status</span>
+                            <span class="stat-value" id="eventStatus">🟢 Normal</span>
                         </div>
                     </div>
+
+                    <!-- 🟡 Center Section - Zone Monitoring Grid -->
                     <div class="zones-grid" id="zonesGrid"></div>
-                </div>
 
-                <!-- SCREEN 3: QUEUES -->
-                <div id="screen-queues" class="screen">
-                    <div class="screen-title">
-                        <h2>⏱ Queue Status & Wait Times</h2>
-                    </div>
-                    <div class="queue-summary">
-                        <div class="queue-stat">
-                            <span>🚶 Peak Wait</span>
-                            <strong id="peakWait">--</strong>
-                        </div>
-                        <div class="queue-stat">
-                            <span>📍 Busiest Zone</span>
-                            <strong id="busiestZone">--</strong>
-                        </div>
-                        <div class="queue-stat">
-                            <span>⏱ Avg Wait</span>
-                            <strong id="avgWait">--</strong>
-                        </div>
-                    </div>
-                    <div class="queues-grid" id="queuesGrid"></div>
-                </div>
-
-                <!-- SCREEN 4: ALERTS -->
-                <div id="screen-alerts" class="screen">
-                    <div class="screen-title">
-                        <h2>🚨 AI Alerts & Recommendations</h2>
-                        <span class="ai-badge-small">Decision Engine v2</span>
-                    </div>
-                    <div class="alerts-container" id="alertsContainer"></div>
-                </div>
-
-                <!-- SCREEN 5: NAVIGATION -->
-                <div id="screen-navigate" class="screen">
-                    <div class="screen-title">
-                        <h2>🧭 Smart Navigation Assistant</h2>
-                    </div>
-                    <div class="nav-card">
-                        <select id="userLocation" class="location-select">
-                            <option value="">Select your current location...</option>
-                            <option value="Stage">🎸 Stage</option>
-                            <option value="Seating Area">💺 Seating Area</option>
-                            <option value="Gate A">🚪 Gate A</option>
-                            <option value="Gate B">🚪 Gate B</option>
-                            <option value="Gate C">🚪 Gate C</option>
-                            <option value="Food Court">🍔 Food Court</option>
-                            <option value="Restrooms">🚻 Restrooms</option>
-                            <option value="Merchandise Zone">👕 Merchandise</option>
-                            <option value="Parking Area">🅿️ Parking</option>
-                            <option value="Drop-off Zone">🚗 Drop-off</option>
-                            <option value="Medical Zone">🏥 Medical</option>
-                            <option value="Security Check">🛡️ Security</option>
-                        </select>
-                        <div id="navSuggestion" class="nav-suggestion">
-                            🤖 Select a location for AI-powered navigation
+                    <!-- 🟣 Small Elements -->
+                    <div class="info-footer">
+                        <div class="event-log" id="eventLog">
+                            📢 System initialized • All sensors online
                         </div>
                     </div>
                 </div>
 
-                <!-- BOTTOM NAVIGATION (Back/Next) -->
-                <div class="bottom-nav" id="bottomNav">
-                    <button class="bottom-nav-btn back" id="backBtn" onclick="prevScreen()">← Back</button>
-                    <span class="page-indicator" id="pageIndicator">Welcome</span>
-                    <button class="bottom-nav-btn next" id="nextBtn" onclick="nextScreen()">Next →</button>
+                <!-- ABOUT SCREEN -->
+                <div id="screen-about" class="screen">
+                    <div class="about-container">
+                        <h2>About IntelliCrowd AI</h2>
+                        <p class="about-tagline">Enhancing Event Safety Through Real-Time Crowd Intelligence.</p>
+                        <div class="about-content">
+                            <h3>🎯 Mission</h3>
+                            <p>To revolutionize crowd management at large-scale events using AI-powered real-time insights, ensuring safety, efficiency, and an enjoyable experience for all attendees.</p>
+                            
+                            <h3>🔧 How It Works</h3>
+                            <p>Our system simulates real-time sensor data across 12 venue zones, using AI algorithms to predict crowd density, estimate wait times, and provide intelligent routing suggestions.</p>
+                            
+                            <h3>📊 Features</h3>
+                            <ul>
+                                <li>📍 Real-time crowd monitoring across 12 zones</li>
+                                <li>⏱ Live queue status & wait time predictions</li>
+                                <li>🚨 AI-powered alerts for overcrowding</li>
+                                <li>🤖 Smart navigation & route suggestions</li>
+                                <li>📡 Gradual, realistic data transitions</li>
+                                <li>🔒 Privacy-first anonymous data</li>
+                            </ul>
+                            
+                            <h3>🏗️ Built With</h3>
+                            <p>HTML5, CSS3, JavaScript • AI Decision Engine • Real-time Simulation</p>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
 
         <!-- Footer -->
         <footer>
-            <p>🔒 Privacy-first • 🤖 AI Decision Engine • 📡 Real-time updates every 8 seconds</p>
+            <p>🔒 Privacy-first • 🤖 AI Decision Engine • 📡 Real-time updates every 2 seconds</p>
         </footer>
     </div>
 
