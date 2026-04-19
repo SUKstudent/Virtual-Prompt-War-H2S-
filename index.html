@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- 🟢 WELCOME SCREEN (Entry Layer) -->
+    <!-- WELCOME SCREEN (Entry Layer) -->
     <div id="welcomeScreen" class="welcome-screen">
         <div class="welcome-container">
             <div class="welcome-card">
@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <!-- 🔵 MAIN APP (Hidden until Get Started) -->
+    <!-- MAIN APP (Hidden until Get Started) -->
     <div id="mainApp" class="app" style="display: none;">
         <!-- Header with Timestamp -->
         <header>
@@ -43,7 +43,7 @@
 
         <!-- Main Layout: Sidebar + Content -->
         <div class="main-layout">
-            <!-- ⚫ SIDEBAR NAVIGATION -->
+            <!-- SIDEBAR NAVIGATION -->
             <aside class="sidebar">
                 <nav class="sidebar-nav">
                     <button class="nav-item active" data-screen="dashboard" onclick="goToScreen('dashboard')">
@@ -65,7 +65,6 @@
             <main class="content">
                 <!-- SCREEN 1: DASHBOARD -->
                 <div id="screen-dashboard" class="screen active">
-                    <!-- 📊 Top Section - Summary Stats -->
                     <div class="stats-row">
                         <div class="stat-card">
                             <span class="stat-label">Total Zones</span>
@@ -85,13 +84,11 @@
                         </div>
                     </div>
 
-                    <!-- 🟡 Center Section - Zone Monitoring Grid -->
                     <div class="section-title">
                         <h2>📍 Live Zone Monitoring</h2>
                     </div>
                     <div class="zones-grid" id="zonesGrid"></div>
 
-                    <!-- 🟣 Small Elements -->
                     <div class="info-footer">
                         <div class="event-log" id="eventLog">
                             📢 System initialized • All sensors online
