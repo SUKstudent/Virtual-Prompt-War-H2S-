@@ -1,1 +1,121 @@
-abc
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliCrowd AI | Smart Event Coordination Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🎤</span>
+                <div>
+                    <h1>IntelliCrowd <span class="ai-badge">AI</span></h1>
+                    <p class="tagline">Smart Event Coordination Platform</p>
+                </div>
+            </div>
+            <div class="live-status">
+                <span class="pulse-dot"></span>
+                <span id="lastUpdate">Live</span>
+                <span class="update-badge">updates every 3s</span>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-label">Total Zones</span>
+                <span class="stat-value" id="totalZones">12</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Event Status</span>
+                <span class="stat-value" id="eventStatus">Active</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Attendees</span>
+                <span class="stat-value" id="totalAttendees">--</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Peak Hour</span>
+                <span class="stat-value" id="peakHour">--</span>
+            </div>
+        </div>
+
+        <!-- SECTION 1: DASHBOARD (Crowd Heat) -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2>📍 Dashboard</h2>
+                <div class="legend">
+                    <span><span class="legend-low"></span> Low (<40%)</span>
+                    <span><span class="legend-med"></span> Medium (40-70%)</span>
+                    <span><span class="legend-high"></span> High (>70%)</span>
+                </div>
+            </div>
+            <div class="zones-grid" id="zonesGrid">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+
+        <!-- SECTION 2: QUEUES & WAIT TIMES -->
+        <section class="queues-section">
+            <div class="section-header">
+                <h2>⏱ Queue Status & Wait Times</h2>
+                <button class="refresh-btn" onclick="forceRefresh()">🔄 Refresh Now</button>
+            </div>
+            <div class="queues-grid" id="queuesGrid">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+
+        <!-- SECTION 3: ALERTS + SUGGESTIONS -->
+        <section class="alerts-section">
+            <div class="section-header">
+                <h2>🚨 AI Alerts & Smart Suggestions</h2>
+                <span class="ai-model">Decision Engine v2.0</span>
+            </div>
+            <div class="alerts-container" id="alertsContainer">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+
+        <!-- Smart Navigation Assistant -->
+        <section class="navigation-section">
+            <div class="section-header">
+                <h2>📍 Smart Navigation Assistant</h2>
+            </div>
+            <div class="nav-card">
+                <select id="userLocation" class="location-select">
+                    <option value="">Where are you right now?</option>
+                    <option value="Stage">🎸 Stage</option>
+                    <option value="Seating Area">💺 Seating Area</option>
+                    <option value="Gate A">🚪 Gate A</option>
+                    <option value="Gate B">🚪 Gate B</option>
+                    <option value="Gate C">🚪 Gate C</option>
+                    <option value="Food Court">🍔 Food Court</option>
+                    <option value="Restrooms">🚻 Restrooms</option>
+                    <option value="Merchandise Zone">👕 Merchandise</option>
+                    <option value="Parking Area">🅿️ Parking</option>
+                    <option value="Drop-off Zone">🚗 Drop-off</option>
+                    <option value="Medical Zone">🏥 Medical</option>
+                    <option value="Security Check">🛡️ Security</option>
+                </select>
+                <div id="navSuggestion" class="nav-suggestion">
+                    Select your location for AI-powered guidance
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>🔒 Privacy-first: No personal data stored • All analytics anonymized</p>
+            <p>🤖 AI Decision Engine: Real-time rules + predictive algorithms</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
