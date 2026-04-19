@@ -17,101 +17,82 @@ const ZONES = [
 ];
 
 // Screen order
-let currentScreen = "dashboard";
+const SCREENS = ["welcome", "dashboard", "queues", "alerts", "navigate"];
+let currentScreenIndex = 0;
+
+// Store animation states
 let lastEventLog = "📢 System initialized • All sensors online";
 
-// Event log messages
-const EVENT_MESSAGES = [
-    "📡 Sensor network polling • All zones active",
-    "🔄 Data sync in progress • Updating density maps",
-    "🤖 AI model running • Predicting crowd patterns",
-    "📍 Gate A flow increasing • +12 persons/min",
-    "🎸 Stage crowd building • Next performance in 15min",
-    "🍔 Food Court queue moving • +2 staff deployed",
-    "🚪 Gate B holding • Reducing entry rate",
-    "📊 Peak density forecast updated",
-    "🚶 Pedestrian flow rate: 45 persons/min",
-    "✅ All systems operational"
-];
-
 // ============================================
-// GET STARTED FUNCTION
+// CAUSE-EFFECT LOG GENERATOR
 // ============================================
-function getStarted() {
-    const welcomeScreen = document.getElementById('welcomeScreen');
-    const mainApp = document.getElementById('mainApp');
+function generateEventLog(zonesData) {
+    const possibleLogs = [];
     
-    welcomeScreen.style.animation = 'fadeOut 0.3s ease';
-    setTimeout(() => {
-        welcomeScreen.style.display = 'none';
-        mainApp.style.display = 'block';
-        mainApp.style.animation = 'fadeIn 0.5s ease';
-        
-        initializeZones();
-        rebuildZonesGrid();
-        updateDashboardStats();
-        updateTimestamp();
-        startStaggeredUpdates();
-        startEventLogUpdates();
-        
-        // Setup navigation listener
-        const locationSelect = document.getElementById('userLocation');
-        if (locationSelect) {
-            locationSelect.addEventListener('change', updateNavigationSuggestion);
+    // Check gates
+    const gates = zonesData.filter(z => z.name.includes('Gate'));
+    gates.forEach(gate => {
+        if (gate.currentDensity > 75) {
+            possibleLogs.push(`🚪 ${gate.name} at ${gate.currentDensity}% • Consider opening additional lane`);
+        } else if (gate.currentDensity < 35) {
+            possibleLogs.push(`🚪 ${gate.name} flow light • Reducing staff allocation`);
         }
-    }, 300);
-}
-
-// Add fadeOut animation
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-    @keyframes fadeOut {
-        from { opacity: 1; }
-        to { opacity: 0; }
-    }
-`;
-document.head.appendChild(styleSheet);
-
-// ============================================
-// INITIALIZATION
-// ============================================
-function initializeZones() {
-    ZONES.forEach(zone => {
-        zone.currentDensity = Math.floor(Math.random() * (60 - 30 + 1)) + 30;
-        zone.currentWaitTime = calculateWaitTime(zone.currentDensity, zone.type);
     });
-}
-
-function calculateWaitTime(density, zoneType) {
-    let baseWait = 0;
-    if (density < 30) baseWait = Math.floor(Math.random() * 3) + 1;
-    else if (density < 50) baseWait = Math.floor(Math.random() * 5) + 3;
-    else if (density < 70) baseWait = Math.floor(Math.random() * 7) + 8;
-    else if (density < 85) baseWait = Math.floor(Math.random() * 10) + 15;
-    else baseWait = Math.floor(Math.random() * 15) + 25;
     
-    if (zoneType === "service") baseWait = Math.floor(baseWait * 1.3);
-    if (zoneType === "entry") baseWait = Math.floor(baseWait * 1.2);
-    return baseWait;
-}
-
-function generateTargetDensity(zone) {
-    let base = Math.floor(Math.random() * (95 - 20 + 1)) + 20;
-    if (zone.type === "entry") base += 5;
-    if (zone.type === "attraction") base += 10;
-    if (zone.type === "transit") base -= 5;
-    return Math.min(95, Math.max(20, base));
-}
-
-// Get color based on density
-function getColorClass(density) {
-    if (density < 45) return 'green';
-    if (density < 70) return 'yellow';
-    return 'red';
+    // Check stage
+    const stage = zonesData.find(z => z.name === "Stage");
+    if (stage && stage.currentDensity > 70) {
+        possibleLogs.push(`🎸 Stage area congested (${stage.currentDensity}%) • Next performance in 10min`);
+    }
+    
+    // Check food court
+    const foodCourt = zonesData.find(z => z.name === "Food Court");
+    if (foodCourt && foodCourt.currentDensity > 65) {
+        possibleLogs.push(`🍔 Food Court wait time ${foodCourt.currentWaitTime}min • Additional staff deployed`);
+    }
+    
+    // Check parking
+    const parking = zonesData.find(z => z.name === "Parking Area");
+    if (parking && parking.currentDensity > 80) {
+        possibleLogs.push(`🅿️ Parking at ${parking.currentDensity}% • Overflow lot opening`);
+    }
+    
+    // AI prediction
+    const peakZone = zonesData.reduce((max, z) => (z.currentDensity > max.currentDensity ? z : max), zonesData[0]);
+    if (peakZone.currentDensity > 70) {
+        possibleLogs.push(`🤖 AI Forecast: ${peakZone.name} will reach ${Math.min(98, peakZone.currentDensity + 8)}% in 10 minutes`);
+    }
+    
+    // Random interesting logs
+    const randomLogs = [
+        `📊 Real-time sync • ${zonesData.length} zones reporting`,
+        `🔄 Crowd flow optimization algorithm running`,
+        `📍 ${Math.floor(Math.random() * 500) + 100} attendees currently in venue`,
+        `⏱ Average venue wait time: ${Math.round(zonesData.reduce((s,z)=>s + (z.currentWaitTime || 5), 0)/zonesData.length)} min`,
+        `🚶 Pedestrian flow rate: ${Math.floor(Math.random() * 50) + 30} persons/minute`,
+        `📡 Sensor network latency: ${Math.floor(Math.random() * 100 + 20)}ms`,
+        `🔄 Data sync complete • ${new Date().toLocaleTimeString()}`
+    ];
+    
+    if (possibleLogs.length > 0) {
+        const selected = possibleLogs[Math.floor(Math.random() * possibleLogs.length)];
+        if (selected !== lastEventLog) {
+            lastEventLog = selected;
+            return selected;
+        }
+    }
+    
+    const randomLog = randomLogs[Math.floor(Math.random() * randomLogs.length)];
+    if (randomLog !== lastEventLog) {
+        lastEventLog = randomLog;
+        return randomLog;
+    }
+    
+    return lastEventLog;
 }
 
 // ============================================
-// SMOOTH TRANSITIONS (Gradual changes)
+// SMOOTH NUMBER TRANSITIONS
 // ============================================
 function smoothTransition(zoneId, targetDensity, targetWaitTime) {
     const zone = ZONES.find(z => z.id === zoneId);
@@ -132,7 +113,7 @@ function animateZone(zoneId) {
     
     let changed = false;
     
-    // Gradual density change (max 3% per frame)
+    // Animate density
     if (zone.targetDensity !== undefined && zone.currentDensity !== zone.targetDensity) {
         const diff = zone.targetDensity - zone.currentDensity;
         const step = Math.min(Math.abs(diff), 3) * Math.sign(diff);
@@ -140,7 +121,7 @@ function animateZone(zoneId) {
         changed = true;
     }
     
-    // Gradual wait time change (max 1 min per frame)
+    // Animate wait time
     if (zone.targetWaitTime !== undefined && zone.currentWaitTime !== zone.targetWaitTime) {
         const diff = zone.targetWaitTime - zone.currentWaitTime;
         const step = Math.min(Math.abs(diff), 1) * Math.sign(diff);
@@ -148,124 +129,71 @@ function animateZone(zoneId) {
         changed = true;
     }
     
-    if (changed) {
+    // Update UI if on dashboard
+    if (changed && SCREENS[currentScreenIndex] === 'dashboard') {
         updateSingleZoneUI(zoneId);
+    }
+    
+    if (changed) {
         setTimeout(() => animateZone(zoneId), 60);
     } else {
         zone.animating = false;
     }
 }
 
+// Generate random target values
+function generateTargetDensity(zone) {
+    let base = Math.floor(Math.random() * (95 - 20 + 1)) + 20;
+    if (zone.type === "entry") base += 5;
+    if (zone.type === "attraction") base += 10;
+    if (zone.type === "transit") base -= 5;
+    return Math.min(95, Math.max(20, base));
+}
+
+function calculateWaitTime(density, zoneType) {
+    let baseWait = 0;
+    if (density < 30) baseWait = Math.floor(Math.random() * 3) + 1;
+    else if (density < 50) baseWait = Math.floor(Math.random() * 5) + 3;
+    else if (density < 70) baseWait = Math.floor(Math.random() * 7) + 8;
+    else if (density < 85) baseWait = Math.floor(Math.random() * 10) + 15;
+    else baseWait = Math.floor(Math.random() * 15) + 25;
+    
+    if (zoneType === "service") baseWait = Math.floor(baseWait * 1.3);
+    if (zoneType === "entry") baseWait = Math.floor(baseWait * 1.2);
+    return baseWait;
+}
+
 // ============================================
-// STAGGERED UPDATES (Every 2.5 seconds, with delay between zones)
+// STAGGERED ZONE UPDATES (Sensor-like feel)
 // ============================================
-function startStaggeredUpdates() {
-    setInterval(() => {
-        const newTargets = ZONES.map(zone => ({
-            zoneId: zone.id,
-            targetDensity: generateTargetDensity(zone),
-            targetWaitTime: calculateWaitTime(generateTargetDensity(zone), zone.type)
-        }));
-        
-        // Update each zone with delay (simulates real sensors)
-        newTargets.forEach((target, index) => {
-            setTimeout(() => {
-                smoothTransition(target.zoneId, target.targetDensity, target.targetWaitTime);
-            }, index * 150); // 150ms delay between zones
-        });
-        
-        // Update summary stats after all zones
+function updateZonesStaggered() {
+    const newTargets = ZONES.map(zone => ({
+        zoneId: zone.id,
+        targetDensity: generateTargetDensity(zone),
+        targetWaitTime: calculateWaitTime(generateTargetDensity(zone), zone.type)
+    }));
+    
+    // Update each zone with delay - simulates real sensors
+    newTargets.forEach((target, index) => {
         setTimeout(() => {
-            updateDashboardStats();
-            updateNavigationSuggestion(); // Update navigation suggestion when data changes
-        }, ZONES.length * 150 + 200);
-        
-        // Update timestamp
-        updateTimestamp();
-        
-    }, 2500); // Update every 2.5 seconds
-}
-
-// ============================================
-// EVENT LOG UPDATES
-// ============================================
-function startEventLogUpdates() {
-    setInterval(() => {
-        const randomMessage = EVENT_MESSAGES[Math.floor(Math.random() * EVENT_MESSAGES.length)];
-        if (randomMessage !== lastEventLog) {
-            lastEventLog = randomMessage;
-            const eventLogEl = document.getElementById('eventLog');
-            if (eventLogEl) {
-                eventLogEl.innerHTML = `📢 ${randomMessage}`;
-            }
+            smoothTransition(target.zoneId, target.targetDensity, target.targetWaitTime);
+        }, index * 180);
+    });
+    
+    // Update queues and alerts after all zones
+    setTimeout(() => {
+        if (SCREENS[currentScreenIndex] === 'queues') {
+            updateQueuesUI();
         }
-    }, 8000);
-}
-
-// ============================================
-// SMART NAVIGATION - Location Selection
-// ============================================
-function updateNavigationSuggestion() {
-    const select = document.getElementById('userLocation');
-    const suggestionDiv = document.getElementById('navSuggestion');
-    
-    if (!select || !suggestionDiv) return;
-    
-    const selectedLocation = select.value;
-    
-    if (!selectedLocation) {
-        suggestionDiv.innerHTML = '🤖 Select a location above for AI-powered navigation guidance';
-        return;
-    }
-    
-    // Find the selected zone
-    const zone = ZONES.find(z => z.name === selectedLocation);
-    if (!zone) return;
-    
-    const density = zone.currentDensity;
-    const waitTime = zone.currentWaitTime;
-    
-    // Generate suggestion based on density
-    if (density > 70) {
-        // Find less crowded alternatives
-        const alternatives = ZONES.filter(z => z.currentDensity < 50 && z.name !== selectedLocation).slice(0, 2);
-        
-        if (alternatives.length > 0) {
-            suggestionDiv.innerHTML = `
-                🚶 <strong>${selectedLocation} is heavily congested</strong><br>
-                Current density: ${density}% • Wait time: ${waitTime} min<br><br>
-                🤖 <strong>AI Recommendation:</strong><br>
-                Consider moving toward:<br>
-                • ${alternatives[0].name} (${alternatives[0].currentDensity}% density)<br>
-                ${alternatives[1] ? `• ${alternatives[1].name} (${alternatives[1].currentDensity}% density)` : ''}
-            `;
-        } else {
-            suggestionDiv.innerHTML = `
-                🚶 <strong>${selectedLocation} is heavily congested</strong><br>
-                Density: ${density}% • Wait: ${waitTime} min<br><br>
-                ⚠️ All zones are moderately crowded. Consider waiting 10-15 minutes.
-            `;
+        if (SCREENS[currentScreenIndex] === 'alerts') {
+            updateAlertsUI();
         }
-    } else if (density > 45) {
-        const predicted = Math.min(98, density + Math.floor(Math.random() * 10) + 2);
-        suggestionDiv.innerHTML = `
-            ⚠️ <strong>${selectedLocation} is moderately busy</strong><br>
-            Current density: ${density}% • Wait time: ${waitTime} min<br><br>
-            📊 AI predicts ${predicted}% density in 10 minutes.<br>
-            💡 Consider visiting during off-peak hours.
-        `;
-    } else {
-        suggestionDiv.innerHTML = `
-            ✅ <strong>${selectedLocation} is currently clear</strong><br>
-            Density: ${density}% • Wait time: ${waitTime} min<br><br>
-            🎉 Great time to visit! Enjoy the event!
-        `;
-    }
+        updateDashboardStats();
+        updateEventLogUI();
+    }, ZONES.length * 180 + 300);
 }
 
-// ============================================
-// UI UPDATE FUNCTIONS
-// ============================================
+// Update single zone card in UI
 function updateSingleZoneUI(zoneId) {
     const zone = ZONES.find(z => z.id === zoneId);
     if (!zone) return;
@@ -273,56 +201,153 @@ function updateSingleZoneUI(zoneId) {
     const zoneCard = document.querySelector(`.zone-card[data-zone-id="${zoneId}"]`);
     if (zoneCard) {
         const densityValue = zoneCard.querySelector('.density-value');
-        const predictionBadge = zoneCard.querySelector('.prediction-badge');
+        const waitBadge = zoneCard.querySelector('.wait-badge');
         const fillBar = zoneCard.querySelector('.density-fill');
         
         if (densityValue) densityValue.textContent = `${zone.currentDensity}%`;
-        if (predictionBadge) {
-            const predicted = Math.min(98, zone.currentDensity + Math.floor(Math.random() * 10) - 3);
-            predictionBadge.innerHTML = `📈 ${predicted}% in 10min`;
-        }
+        if (waitBadge) waitBadge.textContent = `⏱ ${zone.currentWaitTime} min`;
         if (fillBar) fillBar.style.width = `${zone.currentDensity}%`;
         
-        // Update color class
-        const colorClass = getColorClass(zone.currentDensity);
-        zoneCard.classList.remove('green', 'yellow', 'red');
-        zoneCard.classList.add(colorClass);
-        if (fillBar) fillBar.classList.remove('green', 'yellow', 'red');
-        if (fillBar) fillBar.classList.add(colorClass);
+        const status = zone.currentDensity < 45 ? 'low' : (zone.currentDensity < 70 ? 'medium' : 'high');
+        zoneCard.classList.remove('low', 'medium', 'high');
+        zoneCard.classList.add(status);
+        if (fillBar) fillBar.classList.remove('low', 'medium', 'high');
+        if (fillBar) fillBar.classList.add(status);
     }
 }
 
-function rebuildZonesGrid() {
-    const zonesGrid = document.getElementById('zonesGrid');
-    if (!zonesGrid) return;
+// Update queues UI
+function updateQueuesUI() {
+    const queuesGrid = document.getElementById('queuesGrid');
+    if (!queuesGrid) return;
     
-    zonesGrid.innerHTML = '';
-    ZONES.forEach(zone => {
-        const colorClass = getColorClass(zone.currentDensity);
-        const predicted = Math.min(98, zone.currentDensity + Math.floor(Math.random() * 10) - 3);
+    const zonesWithWait = ZONES.map(zone => ({
+        name: zone.name,
+        waitTime: zone.currentWaitTime || 5
+    }));
+    
+    const sortedByWait = [...zonesWithWait].sort((a, b) => b.waitTime - a.waitTime).slice(0, 8);
+    const peakWait = sortedByWait[0]?.waitTime || 0;
+    const busiestZone = sortedByWait[0]?.name || '--';
+    const avgWait = Math.round(sortedByWait.reduce((s, z) => s + z.waitTime, 0) / sortedByWait.length);
+    
+    const peakWaitEl = document.getElementById('peakWait');
+    const busiestZoneEl = document.getElementById('busiestZone');
+    const avgWaitEl = document.getElementById('avgWait');
+    
+    if (peakWaitEl) peakWaitEl.innerHTML = `${peakWait} min`;
+    if (busiestZoneEl) busiestZoneEl.innerHTML = busiestZone;
+    if (avgWaitEl) avgWaitEl.innerHTML = `${avgWait} min`;
+    
+    queuesGrid.innerHTML = '';
+    sortedByWait.forEach(zone => {
+        let waitClass = 'low';
+        if (zone.waitTime > 15) waitClass = 'high';
+        else if (zone.waitTime > 8) waitClass = 'medium';
         
-        const zoneCard = document.createElement('div');
-        zoneCard.className = `zone-card ${colorClass}`;
-        zoneCard.setAttribute('data-zone-id', zone.id);
-        zoneCard.innerHTML = `
-            <div class="zone-info">
-                <h4>${zone.name}</h4>
-                <div class="density-bar">
-                    <div class="density-fill ${colorClass}" style="width: ${zone.currentDensity}%"></div>
-                </div>
-            </div>
-            <div class="zone-stats">
-                <div class="density-value">${zone.currentDensity}%</div>
-                <div class="prediction-badge">📈 ${predicted}% in 10min</div>
-            </div>
+        const queueCard = document.createElement('div');
+        queueCard.className = 'queue-card';
+        queueCard.innerHTML = `
+            <span>${zone.name}</span>
+            <span class="wait-time ${waitClass}">${zone.waitTime} min</span>
         `;
-        zonesGrid.appendChild(zoneCard);
+        queuesGrid.appendChild(queueCard);
     });
 }
 
+// Update alerts UI
+function updateAlertsUI() {
+    const alertsContainer = document.getElementById('alertsContainer');
+    if (!alertsContainer) return;
+    
+    const zonesData = ZONES.map(zone => ({
+        name: zone.name,
+        density: zone.currentDensity,
+        waitTime: zone.currentWaitTime
+    }));
+    
+    const alerts = generateAlerts(zonesData);
+    alertsContainer.innerHTML = '';
+    alerts.forEach(alert => {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert ${alert.type}`;
+        alertDiv.innerHTML = `
+            <div class="alert-icon">${alert.icon}</div>
+            <div class="alert-content">
+                <div class="alert-title">${alert.title}</div>
+                <div class="alert-message">${alert.message}</div>
+            </div>
+        `;
+        alertsContainer.appendChild(alertDiv);
+    });
+}
+
+function generateAlerts(zonesData) {
+    const alerts = [];
+    const criticalZones = zonesData.filter(z => z.density > 80);
+    const highZones = zonesData.filter(z => z.density > 70 && z.density <= 80);
+    const quietZones = zonesData.filter(z => z.density < 40);
+    
+    criticalZones.forEach(zone => {
+        alerts.push({
+            type: 'critical',
+            icon: '🚨',
+            title: `CRITICAL: ${zone.name} Overcrowded`,
+            message: `${zone.density}% capacity • ${zone.waitTime} min wait • Immediate action needed`
+        });
+    });
+    
+    if (highZones.length > 0 && quietZones.length > 0) {
+        highZones.slice(0, 2).forEach(zone => {
+            const alt = quietZones[0];
+            alerts.push({
+                type: 'suggestion',
+                icon: '💡',
+                title: `AI Suggestion: ${zone.name}`,
+                message: `Redirect traffic to ${alt.name} (${alt.density}% • ${alt.waitTime} min wait)`
+            });
+        });
+    }
+    
+    // Gate balancing
+    const gates = zonesData.filter(z => z.name.includes('Gate'));
+    if (gates.length >= 2) {
+        const busiestGate = gates.reduce((max, g) => g.density > max.density ? g : max, gates[0]);
+        const quietestGate = gates.reduce((min, g) => g.density < min.density ? g : min, gates[0]);
+        if (busiestGate.density - quietestGate.density > 30) {
+            alerts.push({
+                type: 'suggestion',
+                icon: '🚪',
+                title: 'Gate Balancing Recommended',
+                message: `${busiestGate.name} (${busiestGate.density}%) vs ${quietestGate.name} (${quietestGate.density}%) • Redirect entry flow`
+            });
+        }
+    }
+    
+    if (alerts.length === 0) {
+        alerts.push({
+            type: 'success',
+            icon: '✅',
+            title: 'All Zones Operating Normally',
+            message: 'Crowd flow is well balanced • Continue monitoring'
+        });
+    }
+    
+    const peakZone = zonesData.reduce((max, z) => z.density > max.density ? z : max, zonesData[0]);
+    alerts.push({
+        type: 'info',
+        icon: '📊',
+        title: 'AI Prediction',
+        message: `Peak congestion expected at ${peakZone.name} in ~10 minutes • Prepare crowd diversion`
+    });
+    
+    return alerts.slice(0, 5);
+}
+
+// Update dashboard stats
 function updateDashboardStats() {
-    const avgDensity = Math.round(ZONES.reduce((s, z) => s + z.currentDensity, 0) / ZONES.length);
-    const crowdedCount = ZONES.filter(z => z.currentDensity > 70).length;
+    const avgDensity = Math.round(ZONES.reduce((s, z) => s + (z.currentDensity || 45), 0) / ZONES.length);
+    const crowdedCount = ZONES.filter(z => (z.currentDensity || 45) > 70).length;
     
     const avgDensityEl = document.getElementById('avgDensity');
     const crowdedCountEl = document.getElementById('crowdedCount');
@@ -330,13 +355,28 @@ function updateDashboardStats() {
     
     if (avgDensityEl) avgDensityEl.innerHTML = avgDensity + '<span class="unit">%</span>';
     if (crowdedCountEl) crowdedCountEl.innerHTML = crowdedCount;
-    if (eventStatusEl) {
-        if (avgDensity > 65) eventStatusEl.innerHTML = '🔴 High Traffic';
-        else if (avgDensity > 40) eventStatusEl.innerHTML = '🟡 Moderate';
-        else eventStatusEl.innerHTML = '🟢 Normal';
+    if (eventStatusEl) eventStatusEl.innerHTML = avgDensity > 60 ? '🟡 High Traffic' : '🟢 Normal';
+}
+
+// Update event log UI
+function updateEventLogUI() {
+    const eventLogEl = document.getElementById('eventLog');
+    if (eventLogEl && SCREENS[currentScreenIndex] === 'dashboard') {
+        const zonesData = ZONES.map(zone => ({
+            name: zone.name,
+            currentDensity: zone.currentDensity,
+            currentWaitTime: zone.currentWaitTime
+        }));
+        const newLog = generateEventLog(zonesData);
+        eventLogEl.innerHTML = newLog;
+        eventLogEl.style.animation = 'none';
+        setTimeout(() => {
+            eventLogEl.style.animation = 'slideIn 0.5s ease';
+        }, 10);
     }
 }
 
+// Update timestamp
 function updateTimestamp() {
     const timestampEl = document.getElementById('lastUpdate');
     if (timestampEl) {
@@ -350,42 +390,178 @@ function updateTimestamp() {
     }
 }
 
+// Force refresh
+function forceRefresh() {
+    rebuildZonesGrid();
+    updateDashboardStats();
+    updateQueuesUI();
+    updateAlertsUI();
+    updateTimestamp();
+}
+
+// Rebuild zones grid
+function rebuildZonesGrid() {
+    const zonesGrid = document.getElementById('zonesGrid');
+    if (!zonesGrid) return;
+    
+    zonesGrid.innerHTML = '';
+    ZONES.forEach(zone => {
+        const status = (zone.currentDensity || 45) < 45 ? 'low' : ((zone.currentDensity || 45) < 70 ? 'medium' : 'high');
+        const zoneCard = document.createElement('div');
+        zoneCard.className = `zone-card ${status}`;
+        zoneCard.setAttribute('data-zone-id', zone.id);
+        zoneCard.innerHTML = `
+            <div class="zone-info">
+                <h4>${zone.name}</h4>
+                <div class="density-bar">
+                    <div class="density-fill ${status}" style="width: ${zone.currentDensity || 45}%"></div>
+                </div>
+                <small>AI monitoring active</small>
+            </div>
+            <div class="zone-stats">
+                <div class="density-value">${zone.currentDensity || 45}%</div>
+                <div class="wait-badge">⏱ ${zone.currentWaitTime || 5} min</div>
+            </div>
+        `;
+        zonesGrid.appendChild(zoneCard);
+    });
+}
+
 // ============================================
 // SCREEN NAVIGATION
 // ============================================
-function goToScreen(screenName) {
-    currentScreen = screenName;
-    
-    // Hide all screens
-    const screens = ['dashboard', 'about'];
-    screens.forEach(screen => {
+function goToScreen(screenId) {
+    const index = SCREENS.indexOf(screenId);
+    if (index !== -1) {
+        currentScreenIndex = index;
+        showCurrentScreen();
+    }
+}
+
+function nextScreen() {
+    if (currentScreenIndex < SCREENS.length - 1) {
+        currentScreenIndex++;
+        showCurrentScreen();
+    }
+}
+
+function prevScreen() {
+    if (currentScreenIndex > 0) {
+        currentScreenIndex--;
+        showCurrentScreen();
+    }
+}
+
+function showCurrentScreen() {
+    SCREENS.forEach(screen => {
         const element = document.getElementById(`screen-${screen}`);
         if (element) element.classList.remove('active');
     });
     
-    // Show selected screen
-    const selectedScreen = document.getElementById(`screen-${screenName}`);
-    if (selectedScreen) selectedScreen.classList.add('active');
+    const currentScreen = SCREENS[currentScreenIndex];
+    const currentElement = document.getElementById(`screen-${currentScreen}`);
+    if (currentElement) currentElement.classList.add('active');
     
-    // Update sidebar active state
     document.querySelectorAll('.nav-item').forEach(item => {
         const itemScreen = item.getAttribute('data-screen');
-        if (itemScreen === screenName) {
+        if (itemScreen === currentScreen) {
             item.classList.add('active');
         } else {
             item.classList.remove('active');
         }
     });
     
-    // Refresh dashboard data if needed
-    if (screenName === 'dashboard') {
+    const pageIndicator = document.getElementById('pageIndicator');
+    if (pageIndicator) {
+        const names = { welcome: 'Welcome', dashboard: 'Dashboard', queues: 'Queues', alerts: 'Alerts', navigate: 'Navigate' };
+        pageIndicator.textContent = names[currentScreen] || currentScreen;
+    }
+    
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        if (currentScreen === 'welcome') {
+            backBtn.style.visibility = 'hidden';
+            backBtn.style.opacity = '0';
+        } else {
+            backBtn.style.visibility = 'visible';
+            backBtn.style.opacity = '1';
+        }
+    }
+    
+    if (currentScreen === 'dashboard') {
         rebuildZonesGrid();
         updateDashboardStats();
-        updateNavigationSuggestion();
+        updateEventLogUI();
+    }
+    if (currentScreen === 'queues') {
+        updateQueuesUI();
+    }
+    if (currentScreen === 'alerts') {
+        updateAlertsUI();
+    }
+}
+
+// Navigation helper
+function getNavigationSuggestion(location) {
+    const zone = ZONES.find(z => z.name === location);
+    if (!zone) return null;
+    
+    const density = zone.currentDensity || 45;
+    const waitTime = zone.currentWaitTime || 5;
+    
+    if (density > 70) {
+        const alternatives = ZONES.filter(z => (z.currentDensity || 45) < 50 && z.name !== location).slice(0, 2);
+        if (alternatives.length > 0) {
+            return `🚶 ${location} is heavily congested (${density}%, ${waitTime} min wait). AI suggests: ${alternatives.map(a => `${a.name} (${a.currentDensity || 45}%)`).join(' or ')}`;
+        }
+        return `🚶 ${location} is heavily congested (${density}%, ${waitTime} min wait). Consider waiting 15-20 minutes.`;
+    } else if (density > 45) {
+        return `⚠️ ${location} is moderately busy (${density}%, ${waitTime} min wait). Expected to reach ${Math.min(98, density + 10)}% in 10 minutes.`;
+    } else {
+        return `✅ ${location} is clear (${density}%, ${waitTime} min wait). Enjoy the event!`;
+    }
+}
+
+function updateNavigation() {
+    const select = document.getElementById('userLocation');
+    const suggestionDiv = document.getElementById('navSuggestion');
+    if (select && suggestionDiv && select.value) {
+        const suggestion = getNavigationSuggestion(select.value);
+        suggestionDiv.innerHTML = suggestion || '🤖 Select a location for AI-powered navigation';
     }
 }
 
 // ============================================
-// INITIALIZE
+// INITIALIZATION
 // ============================================
-initializeZones();
+
+// Initialize zones with random starting values
+ZONES.forEach(zone => {
+    zone.currentDensity = Math.floor(Math.random() * (60 - 30 + 1)) + 30;
+    zone.currentWaitTime = calculateWaitTime(zone.currentDensity, zone.type);
+});
+
+// Event listeners
+const locationSelect = document.getElementById('userLocation');
+if (locationSelect) {
+    locationSelect.addEventListener('change', updateNavigation);
+}
+
+// Start staggered updates every 8 seconds
+setInterval(() => {
+    const activeScreen = SCREENS[currentScreenIndex];
+    if (activeScreen === 'dashboard' || activeScreen === 'queues' || activeScreen === 'alerts') {
+        updateZonesStaggered();
+    }
+}, 8000);
+
+// Update timestamp every second
+setInterval(() => {
+    updateTimestamp();
+}, 1000);
+
+// Initialize
+showCurrentScreen();
+rebuildZonesGrid();
+updateDashboardStats();
+updateTimestamp();
