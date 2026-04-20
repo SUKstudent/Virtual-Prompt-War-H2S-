@@ -12,8 +12,8 @@
     <div id="welcomeScreen" class="welcome-screen">
         <div class="welcome-container">
             <div class="welcome-card">
-                <div class="welcome-icon">🎤</div>
-                <h1 class="welcome-title">IntelliCrowd <span class="ai-badge">AI</span></h1>
+                <div class="welcome-icon" aria-hidden="true">🎤</div>
+                <h1 class="welcome-title">IntelliCrowd <span class="ai-badge" aria-label="AI powered">AI</span></h1>
                 <p class="welcome-tagline">Enhancing Event Safety Through Real-Time Crowd Intelligence.</p>
                 <p class="welcome-description">AI-powered crowd management system for large-scale venues. Monitor density, predict wait times, and optimize crowd flow in real-time.</p>
                 <div class="welcome-features">
@@ -22,7 +22,7 @@
                     <div class="welcome-feature">🚨 AI-powered alerts for overcrowding</div>
                     <div class="welcome-feature">🤖 Smart navigation & route suggestions</div>
                 </div>
-                <button class="get-started-btn" onclick="getStarted()">Get Started →</button>
+                <button class="get-started-btn" onclick="getStarted()" aria-label="Enter the application">Get Started →</button>
             </div>
         </div>
     </div>
@@ -32,30 +32,30 @@
         <!-- Header with Timestamp -->
         <header>
             <div class="logo">
-                <span class="logo-icon">🎤</span>
-                <h1>IntelliCrowd <span class="ai-badge">AI</span></h1>
+                <span class="logo-icon" aria-hidden="true">🎤</span>
+                <h1>IntelliCrowd <span class="ai-badge" aria-label="AI powered">AI</span></h1>
             </div>
             <div class="live-status">
-                <span class="pulse-dot"></span>
-                <span id="lastUpdate">Last updated: --:--:--</span>
+                <span class="pulse-dot" aria-hidden="true"></span>
+                <span id="lastUpdate" aria-live="polite">Last updated: --:--:--</span>
             </div>
         </header>
 
         <!-- Main Layout: Sidebar + Content -->
         <div class="main-layout">
             <!-- SIDEBAR NAVIGATION -->
-            <aside class="sidebar">
+            <aside class="sidebar" aria-label="Main navigation">
                 <nav class="sidebar-nav">
-                    <button class="nav-item active" data-screen="dashboard" onclick="goToScreen('dashboard')">
-                        <span class="nav-icon">📊</span>
+                    <button class="nav-item active" data-screen="dashboard" onclick="goToScreen('dashboard')" aria-label="Dashboard view">
+                        <span class="nav-icon" aria-hidden="true">📊</span>
                         <span>Dashboard</span>
                     </button>
-                    <button class="nav-item" data-screen="navigation" onclick="goToScreen('navigation')">
-                        <span class="nav-icon">🧭</span>
+                    <button class="nav-item" data-screen="navigation" onclick="goToScreen('navigation')" aria-label="Navigation view">
+                        <span class="nav-icon" aria-hidden="true">🧭</span>
                         <span>Navigation</span>
                     </button>
-                    <button class="nav-item" data-screen="about" onclick="goToScreen('about')">
-                        <span class="nav-icon">ℹ️</span>
+                    <button class="nav-item" data-screen="about" onclick="goToScreen('about')" aria-label="About view">
+                        <span class="nav-icon" aria-hidden="true">ℹ️</span>
                         <span>About</span>
                     </button>
                 </nav>
@@ -87,10 +87,10 @@
                     <div class="section-title">
                         <h2>📍 Live Zone Monitoring</h2>
                     </div>
-                    <div class="zones-grid" id="zonesGrid"></div>
+                    <div class="zones-grid" id="zonesGrid" aria-live="polite" aria-label="Live crowd density monitoring for 12 venue zones" role="region"></div>
 
                     <div class="info-footer">
-                        <div class="event-log" id="eventLog">
+                        <div class="event-log" id="eventLog" aria-live="polite">
                             📢 System initialized • All sensors online
                         </div>
                     </div>
@@ -100,15 +100,15 @@
                 <div id="screen-navigation" class="screen">
                     <div class="nav-page-container">
                         <div class="nav-page-header">
-                            <span class="nav-page-icon">🧭</span>
+                            <span class="nav-page-icon" aria-hidden="true">🧭</span>
                             <h2>Smart Navigation Assistant</h2>
                             <p>AI-powered guidance to help you navigate the venue efficiently</p>
                         </div>
 
                         <div class="nav-page-card">
                             <div class="nav-page-selector">
-                                <label>📍 Select your current location:</label>
-                                <select id="userLocation" class="location-select-large">
+                                <label for="userLocation">📍 Select your current location:</label>
+                                <select id="userLocation" class="location-select-large" aria-label="Select your current zone">
                                     <option value="">Choose your current zone...</option>
                                     <option value="Stage">🎸 Stage</option>
                                     <option value="Seating Area">💺 Seating Area</option>
@@ -125,7 +125,7 @@
                                 </select>
                             </div>
 
-                            <div id="navPageSuggestion" class="nav-page-suggestion">
+                            <div id="navPageSuggestion" class="nav-page-suggestion" aria-live="polite">
                                 🤖 Select your current location above for AI-powered navigation guidance
                             </div>
 
@@ -171,9 +171,9 @@
 
                 <!-- BOTTOM NAVIGATION (Back/Next) -->
                 <div class="bottom-nav">
-                    <button class="bottom-nav-btn back" id="backBtn" onclick="prevScreen()">← Back</button>
-                    <span class="page-indicator" id="pageIndicator">Dashboard</span>
-                    <button class="bottom-nav-btn next" id="nextBtn" onclick="nextScreen()">Next →</button>
+                    <button class="bottom-nav-btn back" id="backBtn" onclick="prevScreen()" aria-label="Previous screen">← Back</button>
+                    <span class="page-indicator" id="pageIndicator" aria-live="polite">Dashboard</span>
+                    <button class="bottom-nav-btn next" id="nextBtn" onclick="nextScreen()" aria-label="Next screen">Next →</button>
                 </div>
             </main>
         </div>
